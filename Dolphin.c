@@ -4,6 +4,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int countDolphinsInList(Dolphin* head) {
+	int count = 0;  
+
+
+	while (head != NULL) {
+		count++;          
+		head = head->next; 
+	}
+
+	return count; 
+}
+
+
 
 Dolphin* searchDolphinByName(char tav, Dolphin* head)
 {
@@ -21,16 +34,29 @@ Dolphin* searchDolphinByName(char tav, Dolphin* head)
 Dolphin* getDolphinFromUser(Dolphin* head) {
 	char tav;
 	while (fgetchar() != '\n');
+	printf("Enter the dolphin name by capital letter:");
 	do {
-		printf("Enter the dolphin name by capital letter:");
 		tav = getchar();
 		if (searchDolphinByName(tav, head) != NULL) {
 			printf("this name = %c is already taken \n", tav);
+			printf("Enter the dolphin name by capital letter:");
 		}
 	} while (tav < 'A' || tav>'Z' || searchDolphinByName(tav, head) != NULL);
-	printf("Enter the dolphin length:");
+
+	double minLength = 10;
 	double length = 0;
-	scanf("%lf", &length);
+	printf("Enter the dolphin length (at least %.1lf) :", minLength);
+
+	do {
+		
+		scanf("%lf", &length);
+		if (length < minLength) {
+			printf("%.2lf is smaller than the minimum length \n", length);
+			printf("Please Enter the dolphin length (at least %.1lf) :", minLength);
+		}
+	} while (length < minLength);
+
+
 	while (fgetchar() != '\n');
 	Dolphin* newDolphin = (Dolphin*)calloc(1, sizeof(Dolphin));
 	if (newDolphin == NULL) {
@@ -38,26 +64,32 @@ Dolphin* getDolphinFromUser(Dolphin* head) {
 		return;
 	}
 	newDolphin->length = length;
-	newDolphin->friendshipValue = 10;
+	//friendshipValue equal to the num of the exist dolphins before adding a new one
+	newDolphin->friendshipValue = countDolphinsInList(head)-1;
 	newDolphin->nameByChar = tav;
+	
+	printf("\nnew Dolphin added successfully! is details are : \n");
+	PRINTALLDOLPHIND(newDolphin);
 	return newDolphin;
 }
 
 void printDolphin(Dolphin* dolphin) {
-	printf("Name : {%c} , friendshipValue : {%d} , length {%.2lf}\n", dolphin->nameByChar, dolphin->friendshipValue, dolphin->length);
+	PRINTALLDOLPHIND(dolphin);
 }
 
-
-int removeByFriendshipValue(Dolphin* head, int friendShipValue) {
+int removeByFriendshipValue(Dolphin** head, int friendShipValue) {
 	int removedCount = 0;
-	while (head != NULL && head->friendshipValue < friendShipValue) {
-		Dolphin* temp = head;
-		head = head->next;
+
+	// Handle the case where the head needs to be removed
+	while (*head != NULL && (*head)->friendshipValue < friendShipValue) {
+		Dolphin* temp = *head;
+		*head = (*head)->next;
 		free(temp);
 		removedCount++;
 	}
 
-	Dolphin* current = head;
+	// Now handle the rest of the list
+	Dolphin* current = *head;
 	while (current != NULL && current->next != NULL) {
 		if (current->next->friendshipValue < friendShipValue) {
 			Dolphin* temp = current->next;
@@ -72,6 +104,7 @@ int removeByFriendshipValue(Dolphin* head, int friendShipValue) {
 
 	return removedCount;
 }
+
 
 
 Dolphin* createDolphin(int friendshipValue, double length, char nameByChar) {
@@ -147,4 +180,16 @@ Dolphin* readDolphinFromBinFile(FILE* file) {
 	fread(&dolphin->nameByChar, sizeof(char), 1, file);
 
 	return dolphin;
+}
+
+void removeAndPrintChangesInDolphinsList(Dolphin* head)
+{
+
+	printf("================BEFORE==============\n");
+	printDolphinList(head);
+	printf("================AFTER==============\n");
+	int friendshipValue = 1; // may be the user will chose it ????
+	int removed = removeByFriendshipValue(&(head), friendshipValue);
+	printf(" %d dolphins removed \n", removed);
+	printDolphinList(head);
 }

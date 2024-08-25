@@ -1,12 +1,12 @@
 #pragma once
 #include <stdio.h>
 #include "generalFunctions.h"
-#define PRINTALLDOLPHIND(Fish){\
-				printf("name : %s ,",->name);\
-				printf("length : %lf ,",Fish->age);\
-				printf("friendshipValue: %d \n",Fish->age);\
-				printf("\n");\
+#define PRINTALLDOLPHIND(Fish) {\
+    printf("Name: {%c}, ", Fish->nameByChar);\
+    printf("Length: {%.2lf}, ", Fish->length);\
+    printf("Friendship Value: {%d}\n", Fish->friendshipValue);\
 }
+
 
 
 typedef struct Dolphin {
@@ -16,13 +16,15 @@ typedef struct Dolphin {
 	char nameByChar;
 }Dolphin;
 
+int countDolphinsInList(Dolphin* head);
 Dolphin* getDolphinFromUser(Dolphin* head);
 Dolphin* searchDolphinByName(char tav, Dolphin* head);
 void printDolphinList(Dolphin* head);
-int removeByFriendshipValue(Dolphin* head, int friendShipValue);
+int removeByFriendshipValue(Dolphin** head, int friendShipValue);
 Dolphin* createDolphin(int friendshipValue, double length, char nameByChar);
 void printDolphin(Dolphin* dolphin);
 void writeDolphinToBinaryFile(Dolphin* dolphin, FILE* file);
 void writeDolphinToFile(Dolphin* dolphin, FILE* file);
 Dolphin* readDolphinFromFile(FILE* file);
 Dolphin* readDolphinFromBinFile(FILE* file);
+void removeAndPrintChangesInDolphinsList(Dolphin* head);
