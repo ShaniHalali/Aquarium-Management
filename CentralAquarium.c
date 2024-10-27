@@ -13,7 +13,7 @@ void writeCentralAquariumToTxtFile(CentralAquarium* aquarium, char* fileName) {
 }
 
 
-void writeCentralAquariumToBinnaryFile(CentralAquarium* aquarium, char* fileName) {
+void writeCentralAquariumToBinaryFile(CentralAquarium* aquarium, char* fileName) {
 	FILE* file = fopen(fileName, "wb");
 	if (file == NULL) {
 		printf("Failed to open file for writing!\n");
@@ -28,7 +28,7 @@ void writeCentralAquariumToBinnaryFile(CentralAquarium* aquarium, char* fileName
 	fclose(file);
 }
 
-CentralAquarium* readCentralAquariumFromBinnaryFile(char* fileName) {
+CentralAquarium* readCentralAquariumFromBinaryFile(char* fileName) {
 	FILE* file = fopen(fileName, "rb");
 	if (file == NULL) {
 		printf("Failed to open file for reading!\n");
@@ -63,11 +63,11 @@ CentralAquarium* readCentralAquariumFromBinnaryFile(char* fileName) {
 	result->freshAquarium = readFreshAquariumFromBinaryFile(file);
 	result->saltAquarium = readSaltAquariumFromBinaryFile(file);
 	fclose(file);
+	printf("Loading aquarium data from binary file...\n");
 	return result;
 
 
 }
-
 
 
 CentralAquarium* readCentralAquariumFromTxtFile(char* fileName) {
@@ -76,25 +76,53 @@ CentralAquarium* readCentralAquariumFromTxtFile(char* fileName) {
 		printf("Failed to open file for reading!\n");
 		return NULL;
 	}
+
 	CentralAquarium* result = (CentralAquarium*)calloc(1, sizeof(CentralAquarium));
-	result->name = (char*)calloc(255, sizeof(char));
-	if (fscanf(file, "%[^\n]", result->name) != 1) {
-		printf("Failed to read aquarium name from file!\n");
+	if (result == NULL) {
+		printf("Memory allocation failed!\n");
 		fclose(file);
 		return NULL;
 	}
+
+	result->name = (char*)calloc(MAX_NAME_LENGTH, sizeof(char));
+	if (result->name == NULL) {
+		printf("Memory allocation for name failed!\n");
+		free(result);
+		fclose(file);
+		return NULL;
+	}
+
+	// Read the entire line for the name including spaces
+	if (fgets(result->name, MAX_NAME_LENGTH, file) == NULL) {
+		printf("Failed to read aquarium name from file!\n");
+		free(result->name);
+		free(result);
+		fclose(file);
+		return NULL;
+	}
+
+	// Remove the newline character at the end if it exists
+	size_t len = strlen(result->name);
+	if (len > 0 && result->name[len - 1] == '\n') {
+		result->name[len - 1] = '\0';
+	}
+
+	// Read other parts of the CentralAquarium
 	result->freshAquarium = readFreshAquariumFromFile(file);
 	result->saltAquarium = readSaltAquariumFromFile(file);
+
+	fclose(file);
+	printf("Loading aquarium data from text file...\n");
 	return result;
 }
-
-void printAllCentralAuqruaiumDetails(CentralAquarium* aquarium) {
-	printf("Name : %s \n", aquarium->name);
-	if (aquarium->saltAquarium != NULL) {
-		printAllSaltAquariums(aquarium->saltAquarium);
-	}
+void printAllCentralAquariumDetails(CentralAquarium* aquarium) {
+	printf("\nAquarium name : %s \n", aquarium->name);
+	
 	if (aquarium->freshAquarium != NULL) {
 		printAllFreshAquariums(aquarium->freshAquarium);
+	}
+	if (aquarium->saltAquarium != NULL) {
+		printAllSaltAquariums(aquarium->saltAquarium);
 	}
 }
 

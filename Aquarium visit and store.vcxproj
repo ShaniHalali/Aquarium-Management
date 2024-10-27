@@ -128,7 +128,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CentralAquarium.h" />
-    <ClInclude Include="ChildFish.h" />
     <ClInclude Include="ClownFish.h" />
     <ClInclude Include="Dolphin.h" />
     <ClInclude Include="FreshAquarium.h" />
@@ -141,7 +140,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CentralAquarium.c" />
-    <ClCompile Include="ChildFish.c" />
     <ClCompile Include="ClownFish.c" />
     <ClCompile Include="Dolphin.c" />
     <ClCompile Include="FreshAquarium.c" />

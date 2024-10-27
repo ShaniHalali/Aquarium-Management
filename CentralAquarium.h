@@ -1,7 +1,9 @@
 #include "FreshAquarium.h"
 #include "SaltAquarium.h"
+#define MAX_NAME_LENGTH 255
 
-typedef struct CentralAquarium {
+typedef struct CentralAquarium 
+{
 
 	FreshAquarium* freshAquarium;
 	SaltAquarium* saltAquarium;
@@ -14,9 +16,9 @@ CentralAquarium* initCentralAquarium(char* name);
 //Txt
 CentralAquarium* readCentralAquariumFromTxtFile(char* fileName);
 void writeCentralAquariumToTxtFile(CentralAquarium* ca, char* fileName);
-//Binnary
-void writeCentralAquariumToBinnaryFile(CentralAquarium* aquarium, char* fileName);
-CentralAquarium* readCentralAquariumFromBinnaryFile(char* fileName);
-void printAllCentralAuqruaiumDetails(CentralAquarium* aquarium);
+//Binary
+void writeCentralAquariumToBinaryFile(CentralAquarium* aquarium, char* fileName);
+CentralAquarium* readCentralAquariumFromBinaryFile(char* fileName);
+void printAllCentralAquariumDetails(CentralAquarium* aquarium);
 void freeCentralAquarium(CentralAquarium* ca);
 

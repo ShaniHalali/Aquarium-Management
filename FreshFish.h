@@ -20,11 +20,14 @@ typedef struct
 	int age;
 	int lifeSpan;
 	char* name;
-	struct ChildFish* child;
 }FreshFish;
 
 
 void printFreshFish(FreshFish* fish);
-void printarray(void* array, size_t size, size_t elementsize, void(printFunc)(void));
-void oldestFish(FreshFish** arrOfFreshFish, int amount);
+FreshFish* createFreshFish(const int age, const int lifeSpan, const char* name);
+FreshFish* createFreshFishFromUser();
+void writeFreshFishToBinaryFile(FreshFish* fish, FILE* file);
+void writeFreshFishToTxtFile(FreshFish* fish, FILE* file);
+FreshFish* readFreshFishFromBinaryFile(FILE* file);
+FreshFish* readFreshFishFromFile(FILE* file);
 void freeFreshFish(FreshFish* fish);

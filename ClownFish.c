@@ -2,44 +2,45 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ClownFish.h"
+
 #pragma warning (disable:4996)
 #define _CRT_SECURE_NO_WARNINGS
-#define CALCULATE_FOOD_AMOUNT(age) (2.3 * (age))
-// Function to initialize a single clown fish
-void initClownFish(ClownFish* clownFish) {
-    printf("Enter clown fish's name: ");
-    scanf("%s", clownFish->name);
-    getSeaCreatureFromUser(&(clownFish->seaCreature));
+
+
+void getClownFishFromUser(ClownFish* fish) {
+    printf("Enter name: ");
+    scanf("%49s", fish->name);
+
+    fish->seaCreature.age = getValidAge();
+
+    fish->seaCreature.lifeSpan = getValidLifeSpan(fish->seaCreature.age);
+
+    getValidColors(&fish->seaCreature);
 }
 
-/*
-// Function to print a single clown fish
-void printClownFish(const ClownFish* clownFish) {
-    printf("\nClown Fish: %s\n", clownFish->name);
-    printf("Clown Fish's food amount: %.2lf\n", CALCULATE_FOOD_AMOUNT(clownFish->seaCreature.age));
-    printf("Clown Fish's age: %d\n", clownFish->seaCreature.age);
-    printf("Clown Fish's life span: %d\n", clownFish->seaCreature.lifeSpan);
-    printf("Clown Fish's colours: %s, %s\n", SeaCreatureColour[clownFish->seaCreature.colour1], SeaCreatureColour[clownFish->seaCreature.colour2]);
-    printf("\n");
-}
-*/
 
 
-ClownFish* createClownFish(const char* name, int age, int lifeSpan, eSeaCreatureColour color1, eSeaCreatureColour color2) {
+ClownFish* createClownFish(const char* name, int age, int lifeSpan, eSeaCreatureColor color1, eSeaCreatureColor color2) {
     ClownFish* result = (ClownFish*)calloc(1, sizeof(ClownFish));
+    if (!result) {
+        printf("Memory allocation failed for ClownFish.\n");
+        return NULL;
+    }
+
     strncpy(result->name, name, sizeof(result->name) - 1);
     result->name[sizeof(result->name) - 1] = '\0';
+
     result->seaCreature.age = age;
     result->seaCreature.lifeSpan = lifeSpan;
-    result->seaCreature.colour1 = color1;
-    result->seaCreature.colour2 = color2;
+    result->seaCreature.color1 = color1;
+    result->seaCreature.color2 = color2;
+
     return result;
 }
 
-
 void writeClownFishToFile(ClownFish* fish, FILE* file) {
 
-    fprintf(file, "%d,%d,%d,%d,%s\n", fish->seaCreature.age, fish->seaCreature.lifeSpan, fish->seaCreature.colour1, fish->seaCreature.colour2, fish->name);
+    fprintf(file, "%s,%d,%d,%d,%d\n",  fish->name,fish->seaCreature.age, fish->seaCreature.lifeSpan, fish->seaCreature.color1, fish->seaCreature.color2);
 }
 
 ClownFish* readClownFishFromFile(FILE* file) {
@@ -49,49 +50,56 @@ ClownFish* readClownFishFromFile(FILE* file) {
         printf("Memory allocation failed\n");
         return NULL;
     }
-    if (fscanf(file, "%d,%d,%d,%d,%49[^,]\n", &clownFish->seaCreature.age, &clownFish->seaCreature.lifeSpan, (int*)&clownFish->seaCreature.colour1, (int*)&clownFish->seaCreature.colour2, clownFish->name) != 5) {
+    if (fscanf(file, "%49[^,],%d,%d,%d,%d\n",  clownFish->name, &clownFish->seaCreature.age, &clownFish->seaCreature.lifeSpan, (int*)&clownFish->seaCreature.color1, (int*)&clownFish->seaCreature.color2) != 5) {
 
     }
     return clownFish;
 }
-void writeClownFishToBinaryFile(ClownFish* fish, FILE* file) {
-    if (file == NULL) {
-        printf("Invalid file!\n");
+void writeCompressedClownFishToBinaryFile(ClownFish* fish, FILE* file) {
+    if (!fish || !file) {
+        printf("Invalid ClownFish or file pointer\n");
         return;
     }
 
-    fwrite(&fish->seaCreature.age, sizeof(int), 1, file);
-    fwrite(&fish->seaCreature.lifeSpan, sizeof(int), 1, file);
-    fwrite(&fish->seaCreature.colour1, sizeof(int), 1, file);
-    fwrite(&fish->seaCreature.colour2, sizeof(int), 1, file);
-    int nameLength = strlen(fish->name);
-    fwrite(&nameLength, sizeof(int), 1, file);
+    unsigned short packedData = 0;  // 16-bit to hold packed data
+    packedData |= (fish->seaCreature.age & 0x1F);  // Age uses the first 5 bits
+    packedData |= (fish->seaCreature.lifeSpan & 0x1F) << 5;  // LifeSpan next 5 bits
+    packedData |= (fish->seaCreature.color1 & 0x07) << 10;  // color1 next 3 bits
+    packedData |= (fish->seaCreature.color2 & 0x07) << 13;  // color2 last 3 bits
+
+    fwrite(&packedData, sizeof(unsigned short), 1, file);
+
+    unsigned char nameLength = (unsigned char)strlen(fish->name);
+    fwrite(&nameLength, sizeof(unsigned char), 1, file);
     fwrite(fish->name, sizeof(char), nameLength, file);
 }
 
-
-ClownFish* readClownFishFromBinaryFile(FILE* file) {
-    if (file == NULL) {
-        printf("Invalid file!\n");
+ClownFish* readCompressedClownFishFromBinaryFile(FILE* file) {
+    if (!file) {
+        printf("Invalid file pointer\n");
         return NULL;
     }
 
-    ClownFish* fish = malloc(sizeof(ClownFish));
-    if (fish == NULL) {
-        printf("Memory allocation failed!\n");
+    ClownFish* fish = (ClownFish*)calloc(1, sizeof(ClownFish));
+    if (!fish) {
+        printf("Memory allocation failed for ClownFish\n");
         return NULL;
     }
 
-    // Read the ClownFish structure from the file
-    fread(&fish->seaCreature.age, sizeof(int), 1, file);
-    fread(&fish->seaCreature.lifeSpan, sizeof(int), 1, file);
-    fread(&fish->seaCreature.colour1, sizeof(int), 1, file);
-    fread(&fish->seaCreature.colour2, sizeof(int), 1, file);
-    int nameLength;
-    fread(&nameLength, sizeof(int), 1, file);
+    unsigned short packedData = 0;
+    fread(&packedData, sizeof(unsigned short), 1, file);
+
+
+    fish->seaCreature.age = packedData & 0x1F;  // Extract the first 5 bits for age
+    fish->seaCreature.lifeSpan = (packedData >> 5) & 0x1F;  // Next 5 bits for lifespan
+    fish->seaCreature.color1 = (packedData >> 10) & 0x07;  // Next 3 bits for color1
+    fish->seaCreature.color2 = (packedData >> 13) & 0x07;  // Last 3 bits for color2
+
+
+    unsigned char nameLength = 0;
+    fread(&nameLength, sizeof(unsigned char), 1, file);
     fread(fish->name, sizeof(char), nameLength, file);
-    fish->name[nameLength] = '\0'; // Null-terminate the string
+    fish->name[nameLength] = '\0';
 
     return fish;
 }
-

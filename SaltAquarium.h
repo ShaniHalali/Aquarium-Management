@@ -5,21 +5,22 @@
 #include "SeaCreatures.h"
 #include <stdio.h>
 
-typedef struct {
+typedef struct 
+{
     SeaCreature** seaCreatures;
     int numSeaCreatures;
     Shark** sharks;
     int numSharks;
     ClownFish** clownFishes;
     int numClownFishes;
-
 } SaltAquarium;
 
 SaltAquarium* initSaltAquarium();
 void printAllSaltAquariums(SaltAquarium* aquarium);
 void addSeaCreature(SaltAquarium* saltAquarium, SeaCreature* seaCreature);
+void printSeaCreature(const void* creature);
 void ageAllSeaCreatures(SaltAquarium* aquarium);
-void printAllCorals(SaltAquarium* saltAquarium);
+
 void addShark(SaltAquarium* saltAquarium, Shark* shark);
 void ageAllSharks(SaltAquarium* aquarium);
 void sortSharksMenu(SaltAquarium* aquarium);
@@ -27,7 +28,9 @@ void sharkSearchMenu(SaltAquarium* aquarium);
 Shark* findSharkByWeight(SaltAquarium* aquarium, double weight);
 Shark* findSharkByName(SaltAquarium* aquarium, char* name);
 Shark* findSharkByAge(SaltAquarium* aquarium, int age);
+
 void addClownFish(SaltAquarium* saltAquarium, ClownFish* clownFish);
+void printClownFish(const void* clownFish);
 void ageAllClownFishes(SaltAquarium* aquarium);
 
 void writeSaltAquariumToTxtFile(SaltAquarium* saltAquarium, FILE* fp);
